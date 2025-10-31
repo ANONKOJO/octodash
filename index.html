@@ -513,7 +513,7 @@
             loadComicPage(true);
         }
 
-        function loadComicPage(firstLoad = false) {
+    function loadComicPage(firstLoad = false) {
     if (currentComicPage >= comicPages.length) {
         startGame();
         return;
@@ -522,20 +522,35 @@
     const imgSrc = comicPages[currentComicPage];
     console.log('Loading comic page:', currentComicPage + 1, imgSrc);
     
-    // Only fade out if not the first load
-    if (!firstLoad) {
-        comicImage.classList.remove('show');
-    }
+    // Preload the image first
+    const tempImg = new Image();
+    tempImg.src = imgSrc;
     
-    setTimeout(() => {
-        comicImage.src = imgSrc;
-        comicImage.classList.add('show');
+    tempImg.onload = () => {
+        // Fade out current image
+        if (!firstLoad) {
+            comicImage.classList.remove('show');
+            setTimeout(() => {
+                comicImage.src = imgSrc;
+                comicImage.classList.add('show');
+            }, 600);
+        } else {
+            comicImage.src = imgSrc;
+            comicImage.classList.add('show');
+        }
         
+        // Wait 5 seconds then move to next page
         comicTimeout = setTimeout(() => {
             currentComicPage++;
-            loadComicPage(false);  // Changed from loadComicPage() to loadComicPage(false)
+            loadComicPage(false);
         }, 5000);
-    }, firstLoad ? 100 : 600);
+    };
+    
+    tempImg.onerror = () => {
+        console.error('Failed to load comic page:', imgSrc);
+        currentComicPage++;
+        loadComicPage(false);
+    };
 }
 
         function skipComic() {
