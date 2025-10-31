@@ -560,22 +560,34 @@
 
         // Leaderboard functions
         function saveScore(username, score) {
-            let leaderboard = JSON.parse(localStorage.getItem('octoLeaderboard') || '[]');
-            
-            leaderboard.push({
-                username: username,
-                score: score,
-                date: new Date().toISOString()
-            });
-            
-            // Sort by score (highest first)
-            leaderboard.sort((a, b) => b.score - a.score);
-            
-            // Keep only top 50 scores
-            leaderboard = leaderboard.slice(0, 50);
-            
-            localStorage.setItem('octoLeaderboard', JSON.stringify(leaderboard));
+    let leaderboard = JSON.parse(localStorage.getItem('octoLeaderboard') || '[]');
+    
+    // Find if user already exists
+    const existingIndex = leaderboard.findIndex(entry => entry.username.toLowerCase() === username.toLowerCase());
+    
+    if (existingIndex !== -1) {
+        // User exists - only update if new score is higher
+        if (score > leaderboard[existingIndex].score) {
+            leaderboard[existingIndex].score = score;
+            leaderboard[existingIndex].date = new Date().toISOString();
         }
+    } else {
+        // New user - add to leaderboard
+        leaderboard.push({
+            username: username,
+            score: score,
+            date: new Date().toISOString()
+        });
+    }
+    
+    // Sort by score (highest first)
+    leaderboard.sort((a, b) => b.score - a.score);
+    
+    // Keep only top 50 scores
+    leaderboard = leaderboard.slice(0, 50);
+    
+    localStorage.setItem('octoLeaderboard', JSON.stringify(leaderboard));
+}
 
         function loadLeaderboard() {
             const leaderboard = JSON.parse(localStorage.getItem('octoLeaderboard') || '[]');
