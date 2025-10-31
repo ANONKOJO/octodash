@@ -389,7 +389,7 @@
                 <p>Welcome, <span id="displayName">@username</span>!</p>
             </div>
             <button class="btn" onclick="startComic()">Start Game</button>
-            <button class="btn" onclick="showLeaderboard()" style="margin-top: 1rem; background: linear-gradient(135deg, #ffd93d 0%, #ff6b9d 100%);">Leaderboard</button>
+             
             <p class="made-with-love">Made with ❤️ by <a href="https://x.com/web3gurru" target="_blank">@web3gurru</a></p>
             <p style="margin-top: 0.5rem; opacity: 0.8; font-size: 0.9rem; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);">for Re Protocol Community</p>
         </div>
@@ -414,16 +414,15 @@
         <p class="final-score">Final Score: <span id="finalScore">0</span></p>
         <p style="font-size: 2rem; margin-bottom: 2rem; opacity: 0.8;">The baby octopuses still need you!</p>
         <button class="btn" onclick="restartGame()">Try Again</button>
-        <button class="btn" onclick="showLeaderboard()" style="margin-top: 1rem; background: linear-gradient(135deg, #ffd93d 0%, #ff6b9d 100%);">Leaderboard</button>
+        <button class="btn" onclick="shareScore()" 
+  style="margin-top: 1rem; background: linear-gradient(135deg, #1DA1F2 0%, #0d8ddb 100%);">
+  🐙 Share My Score
+</button>
+
+         
     </div>
 
-    <div class="screen" id="leaderboardScreen">
-        <h1 class="credits-title">🏆 Leaderboard 🏆</h1>
-        <div class="leaderboard-container">
-            <div id="leaderboardList" class="leaderboard-list">
-                <!-- Leaderboard will be populated here -->
-            </div>
-        </div>
+     
         <button class="btn" onclick="backToMenu()" style="margin-top: 2rem;">Back To Main Page</button>
     </div>
 
@@ -535,55 +534,9 @@ async function saveScore(username, score) {
   }
 }
 
-// Load leaderboard from online server
-async function loadLeaderboard() {
-  try {
-    const response = await fetch('/api/load-leaderboard');
-    const leaderboard = await response.json();
+  
 
-    const leaderboardList = document.getElementById('leaderboardList');
-
-    if (!leaderboard || leaderboard.length === 0) {
-      leaderboardList.innerHTML = '<div class="no-scores">No scores yet! Be the first to save the baby octopuses! 🐙</div>';
-      return;
-    }
-
-    leaderboardList.innerHTML = '';
-
-    leaderboard.forEach((entry, index) => {
-      const item = document.createElement('div');
-      item.className = 'leaderboard-item';
-
-      // Add special styling for top 3
-      if (index === 0) item.classList.add('top-1');
-      else if (index === 1) item.classList.add('top-2');
-      else if (index === 2) item.classList.add('top-3');
-
-      const medal =
-        index === 0 ? '🥇' :
-        index === 1 ? '🥈' :
-        index === 2 ? '🥉' : '';
-
-      item.innerHTML = `
-        <div class="leaderboard-rank">${medal} #${index + 1}</div>
-        <div class="leaderboard-player">${entry.username}</div>
-        <div class="leaderboard-score">${entry.score}</div>
-      `;
-
-      leaderboardList.appendChild(item);
-    });
-  } catch (error) {
-    console.error('Error loading leaderboard:', error);
-  }
-}
-
-// Show leaderboard screen
-function showLeaderboard() {
-  loadLeaderboard();
-  showScreen('leaderboardScreen');
-}
-
-        // Game Logic
+// Game Logic
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
@@ -716,9 +669,9 @@ function showLeaderboard() {
             gameRunning = false;
             cancelAnimationFrame(gameLoopId);
             
-            // Save score to leaderboard
+            
             const username = twitterInput.value.trim().replace(/@/g, '') || 'Anonymous';
-            saveScore(username, score);
+        
             
             document.getElementById('finalScore').textContent = score;
             showScreen('gameOverScreen');
