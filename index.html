@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Octo Dash: The Rescue Mission</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: #001f3f;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        #landingScreen {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-image: url('images/landing-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .landing-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .title {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .input-container {
+            margin: 2rem 0;
+        }
+
+        .input-container input {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            border: 3px solid #8b4bc6;
+            border-radius: 50px;
+            width: 300px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .btn {
+            margin-top: 2rem;
+            padding: 1rem 3rem;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #8b4bc6 0%, #6a2c9e 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(139, 75, 198, 0.4);
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(139, 75, 198, 0.6);
+        }
+
+        .profile-preview {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(139, 75, 198, 0.3);
+            border-radius: 15px;
+            display: none;
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        .profile-preview.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .made-with-love {
+            margin-top: 2rem;
+            font-size: 1.1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .made-with-love a {
+            color: #ff6b9d;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        .made-with-love a:hover {
+            color: #ff8fb3;
+        }
+
+        #comicScreen {
+            justify-content: center;
+            align-items: center;
+            background: #000;
+        }
+
+        .comic-container {
+            width: 90%;
+            max-width: 900px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .comic-image {
+            max-width: 100%;
+            max-height: 80%;
+            border: 5px solid #333;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.6s ease-in-out;
+        }
+
+        .comic-image.show {
+            opacity: 1;
+        }
+
+        .comic-controls {
+            position: absolute;
+            bottom: 10px;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .comic-skip {
+            padding: 0.8rem 2rem;
+            font-size: 1.1rem;
+            background: rgba(139, 75, 198, 0.8);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .comic-skip:hover {
+            background: rgba(139, 75, 198, 1);
+            transform: scale(1.05);
+        }
+
+        #gameScreen {
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background: #001f3f;
+        }
+
+        #gameCanvas {
+            border: 5px solid #8b4bc6;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .score-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(139, 75, 198, 0.9);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            font-size: 2rem;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        #gameOverScreen {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-image: url('images/ocean-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-align: center;
+        }
+
+        #gameOverScreen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 0;
+        }
+
+        #gameOverScreen > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .game-over-title {
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            color: #ff6b6b;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        .final-score {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            color: #ffd93d;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        #creditsScreen, #leaderboardScreen {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(180deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: white;
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .credits-title {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .credits-content {
+            font-size: 1.3rem;
+            line-height: 2;
+            max-width: 600px;
+        }
+
+        .credits-content a {
+            color: #ff6b9d;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .credits-content a:hover {
+            color: #ff8fb3;
+        }
+
+        .leaderboard-container {
+            width: 90%;
+            max-width: 600px;
+            max-height: 60vh;
+            overflow-y: auto;
+            margin: 2rem 0;
+            padding-right: 10px;
+        }
+
+        .leaderboard-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .leaderboard-container::-webkit-scrollbar-track {
+            background: rgba(139, 75, 198, 0.2);
+            border-radius: 10px;
+        }
+
+        .leaderboard-container::-webkit-scrollbar-thumb {
+            background: rgba(139, 75, 198, 0.6);
+            border-radius: 10px;
+        }
+
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .leaderboard-item {
+            background: rgba(139, 75, 198, 0.3);
+            padding: 1.5rem;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(139, 75, 198, 0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .leaderboard-item:hover {
+            transform: translateX(5px);
+            border-color: rgba(139, 75, 198, 0.8);
+        }
+
+        .leaderboard-item.top-1 {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.4) 0%, rgba(255, 180, 0, 0.4) 100%);
+            border-color: #ffd700;
+        }
+
+        .leaderboard-item.top-2 {
+            background: linear-gradient(135deg, rgba(192, 192, 192, 0.4) 0%, rgba(169, 169, 169, 0.4) 100%);
+            border-color: #c0c0c0;
+        }
+
+        .leaderboard-item.top-3 {
+            background: linear-gradient(135deg, rgba(205, 127, 50, 0.4) 0%, rgba(184, 115, 51, 0.4) 100%);
+            border-color: #cd7f32;
+        }
+
+        .leaderboard-rank {
+            font-size: 2rem;
+            font-weight: bold;
+            min-width: 60px;
+        }
+
+        .leaderboard-player {
+            flex: 1;
+            font-size: 1.3rem;
+            text-align: left;
+            padding: 0 1rem;
+        }
+
+        .leaderboard-score {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffd93d;
+        }
+
+        .no-scores {
+            font-size: 1.2rem;
+            opacity: 0.7;
+            padding: 2rem;
+        }
+
+        .bubbles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            animation: rise 8s infinite ease-in;
+        }
+
+        @keyframes rise {
+            to {
+                bottom: 110%;
+                transform: translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .title { font-size: 2rem; }
+            .subtitle { font-size: 1rem; }
+            #gameCanvas { width: 90vw !important; height: 60vh !important; }
+            .input-container input { width: 250px; }
+            .game-over-title { font-size: 2.5rem; }
+            .final-score { font-size: 2rem; }
+            .leaderboard-rank { font-size: 1.5rem; min-width: 50px; }
+            .leaderboard-player { font-size: 1.1rem; }
+            .leaderboard-score { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bubbles" id="bubbles"></div>
+
+    <div class="screen active" id="landingScreen">
+        <div class="landing-content">
+            <h1 class="title">🐙 Octo Dash 🐙</h1>
+            <p class="subtitle">The Rescue Mission</p>
+            <div class="input-container">
+                <input type="text" id="twitterHandle" placeholder="Enter your Twitter @username" maxlength="15">
+            </div>
+            <div class="profile-preview" id="profilePreview">
+                <p>Welcome, <span id="displayName">@username</span>!</p>
+            </div>
+            <button class="btn" onclick="startComic()">Start Game</button>
+            <button class="btn" onclick="showLeaderboard()" style="margin-top: 1rem; background: linear-gradient(135deg, #ffd93d 0%, #ff6b9d 100%);">Leaderboard</button>
+            <p class="made-with-love">Made with ❤️ by <a href="https://x.com/web3gurru" target="_blank">@web3gurru</a></p>
+            <p style="margin-top: 0.5rem; opacity: 0.8; font-size: 0.9rem; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);">for Re Protocol Community</p>
+        </div>
+    </div>
+
+    <div class="screen" id="comicScreen">
+        <div class="comic-container">
+            <img id="comicImage" src="" alt="Comic Page" class="comic-image">
+            <div class="comic-controls">
+                <button class="comic-skip" onclick="skipComic()">Skip Story →</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="screen" id="gameScreen">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div class="score-display">Score: <span id="scoreValue">0</span></div>
+    </div>
+
+    <div class="screen" id="gameOverScreen">
+        <h1 class="game-over-title">GAME OVER!</h1>
+        <p class="final-score">Final Score: <span id="finalScore">0</span></p>
+        <p style="font-size: 2rem; margin-bottom: 2rem; opacity: 0.8;">The baby octopuses still need you!</p>
+        <button class="btn" onclick="restartGame()">Try Again</button>
+        <button class="btn" onclick="showLeaderboard()" style="background: linear-gradient(135deg, #ffd93d 0%, #ff6b9d 100%);">Leaderboard</button>
+       
+    </div>
+
+    <div class="screen" id="leaderboardScreen">
+        <h1 class="credits-title">🏆 Leaderboard 🏆</h1>
+        <div class="leaderboard-container">
+            <div id="leaderboardList" class="leaderboard-list">
+                <!-- Leaderboard will be populated here -->
+            </div>
+        </div>
+        <button class="btn" onclick="backToMenu()" style="margin-top: 2rem;">Back To Main Page</button>
+    </div>
+
+    
+
+    <script>
+        // Create bubbles
+        function createBubbles() {
+            const bubbleContainer = document.getElementById('bubbles');
+            if (!bubbleContainer) return;
+            for (let i = 0; i < 20; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                const size = Math.random() * 60 + 20;
+                bubble.style.width = size + 'px';
+                bubble.style.height = size + 'px';
+                bubble.style.left = Math.random() * 100 + '%';
+                bubble.style.animationDelay = Math.random() * 8 + 's';
+                bubble.style.animationDuration = (Math.random() * 5 + 5) + 's';
+                bubbleContainer.appendChild(bubble);
+            }
+        }
+        createBubbles();
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const screen = document.getElementById(screenId);
+            if (screen) screen.classList.add('active');
+        }
+
+        const twitterInput = document.getElementById('twitterHandle');
+        const displayName = document.getElementById('displayName');
+        const profilePreview = document.getElementById('profilePreview');
+
+        if (twitterInput) {
+            twitterInput.addEventListener('input', function (e) {
+                const handle = e.target.value.trim().replace(/@/g, '');
+                if (handle) {
+                    displayName.textContent = handle;
+                    profilePreview.classList.add('show');
+                } else {
+                    profilePreview.classList.remove('show');
+                }
+            });
+        }
+
+        // Comic pages
+        const comicPages = [
+            'images/comic-page-1.png',
+            'images/comic-page-2.png',
+            'images/comic-page-3.png'
+        ];
+
+        let currentComicPage = 0;
+        let comicTimeout = null;
+        const comicImage = document.getElementById('comicImage');
+
+        function startComic() {
+            const username = twitterInput.value.trim();
+            if (!username) {
+                alert('Please enter your Twitter username to begin the mission!');
+                return;
+            }
+
+            currentComicPage = 0;
+            showScreen('comicScreen');
+            loadComicPage(true);
+        }
+
+        function loadComicPage(firstLoad = false) {
+            if (currentComicPage >= comicPages.length) {
+                startGame();
+                return;
+            }
+
+            const imgSrc = comicPages[currentComicPage];
+            console.log('Loading comic page:', currentComicPage + 1, imgSrc);
+            
+            comicImage.classList.remove('show');
+            
+            setTimeout(() => {
+                comicImage.src = imgSrc;
+                comicImage.classList.add('show');
+                
+                comicTimeout = setTimeout(() => {
+                    currentComicPage++;
+                    loadComicPage();
+                }, 5000);
+            }, firstLoad ? 100 : 600);
+        }
+
+        function skipComic() {
+            if (comicTimeout) clearTimeout(comicTimeout);
+            startGame();
+        }
+
+        // Leaderboard functions
+        function saveScore(username, score) {
+            let leaderboard = JSON.parse(localStorage.getItem('octoLeaderboard') || '[]');
+            
+            leaderboard.push({
+                username: username,
+                score: score,
+                date: new Date().toISOString()
+            });
+            
+            // Sort by score (highest first)
+            leaderboard.sort((a, b) => b.score - a.score);
+            
+            // Keep only top 50 scores
+            leaderboard = leaderboard.slice(0, 50);
+            
+            localStorage.setItem('octoLeaderboard', JSON.stringify(leaderboard));
+        }
+
+        function loadLeaderboard() {
+            const leaderboard = JSON.parse(localStorage.getItem('octoLeaderboard') || '[]');
+            const leaderboardList = document.getElementById('leaderboardList');
+            
+            if (leaderboard.length === 0) {
+                leaderboardList.innerHTML = '<div class="no-scores">No scores yet! Be the first to save the baby octopuses! 🐙</div>';
+                return;
+            }
+            
+            leaderboardList.innerHTML = '';
+            
+            leaderboard.forEach((entry, index) => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item';
+                
+                // Add special styling for top 3
+                if (index === 0) item.classList.add('top-1');
+                else if (index === 1) item.classList.add('top-2');
+                else if (index === 2) item.classList.add('top-3');
+                
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+                
+                item.innerHTML = `
+                    <div class="leaderboard-rank">${medal} #${index + 1}</div>
+                    <div class="leaderboard-player">${entry.username}</div>
+                    <div class="leaderboard-score">${entry.score}</div>
+                `;
+                
+                leaderboardList.appendChild(item);
+            });
+        }
+
+        function showLeaderboard() {
+            loadLeaderboard();
+            showScreen('leaderboardScreen');
+        }
+
+        // Game Logic
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let gameRunning = false;
+        let score = 0;
+        let octopusX = canvas.width / 2 - 50;
+        let octopusY = canvas.height - 140;
+        let octopusSpeed = 10;
+        let babies = [];
+        let babySpeed = 2;
+        let gameLoopId;
+
+        // Load ocean background image
+        window.bgImg = new Image();
+        window.bgImg.src = 'images/ocean-bg.jpg';
+        window.bgImg.onload = () => { window.bgImgLoaded = true; };
+
+        // Load octopus images
+        const octopusImg = new Image();
+        octopusImg.src = 'images/octopus-main.png';
+
+        const babyImg = new Image();
+        babyImg.src = 'images/octopus-baby.png';
+
+        const keys = {};
+        
+        document.addEventListener('keydown', e => (keys[e.key] = true));
+        document.addEventListener('keyup', e => (keys[e.key] = false));
+
+        let touchStartX = 0;
+        canvas.addEventListener('touchstart', e => {
+            touchStartX = e.touches[0].clientX;
+        });
+        canvas.addEventListener('touchmove', e => {
+            const touchX = e.touches[0].clientX;
+            const diff = touchX - touchStartX;
+            if (Math.abs(diff) > 10) {
+                keys['ArrowRight'] = diff > 0;
+                keys['ArrowLeft'] = diff < 0;
+            }
+            touchStartX = touchX;
+        });
+        canvas.addEventListener('touchend', () => {
+            keys['ArrowLeft'] = false;
+            keys['ArrowRight'] = false;
+        });
+
+        function spawnBaby() {
+            babies.push({
+                x: Math.random() * (canvas.width - 50),
+                y: -50,
+                caught: false
+            });
+        }
+
+        function startGame() {
+            showScreen('gameScreen');
+            gameRunning = true;
+            score = 0;
+            babies = [];
+            babySpeed = 2;
+            octopusX = canvas.width / 2 - 50;
+            document.getElementById('scoreValue').textContent = score;
+
+            const spawnInterval = setInterval(() => {
+                if (gameRunning) spawnBaby();
+                else clearInterval(spawnInterval);
+            }, 1500);
+
+            gameLoop();
+        }
+
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            // Ocean background
+            if (window.bgImgLoaded) {
+                ctx.drawImage(window.bgImg, 0, 0, canvas.width, canvas.height);
+            } else {
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, '#001f3f');
+                gradient.addColorStop(1, '#003d5c');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            
+            // Move octopus
+            if (keys['ArrowLeft'] && octopusX > 0) octopusX -= octopusSpeed;
+            if (keys['ArrowRight'] && octopusX < canvas.width - 100) octopusX += octopusSpeed;
+
+            // Draw octopus
+            ctx.drawImage(octopusImg, octopusX, octopusY, 150, 150);
+
+            // Handle babies
+            for (let i = babies.length - 1; i >= 0; i--) {
+                const baby = babies[i];
+                baby.y += babySpeed;
+
+                // Catching logic
+                if (!baby.caught &&
+                    baby.x + 25 > octopusX &&
+                    baby.x < octopusX + 100 &&
+                    baby.y + 25 > octopusY &&
+                    baby.y < octopusY + 70) {
+                    baby.caught = true;
+                    score++;
+                    document.getElementById('scoreValue').textContent = score;
+                    babies.splice(i, 1);
+
+                    if (score % 5 === 0 && babySpeed < 8) babySpeed += 0.5;
+                } else if (baby.y > canvas.height + 50) {
+                    if (!baby.caught) {
+                        gameOver();
+                        return;
+                    }
+                    babies.splice(i, 1);
+                } else {
+                    // Draw baby octopus
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#e0b3ff';
+                    ctx.drawImage(babyImg, baby.x, baby.y, 65, 65);
+                    ctx.shadowBlur = 0;
+                }
+            }
+
+            gameLoopId = requestAnimationFrame(gameLoop);
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            cancelAnimationFrame(gameLoopId);
+            
+            // Save score to leaderboard
+            const username = twitterInput.value.trim().replace(/@/g, '') || 'Anonymous';
+            saveScore(username, score);
+            
+            document.getElementById('finalScore').textContent = score;
+            showScreen('gameOverScreen');
+        }
+
+        function restartGame() {
+            startGame();
+        }
+
+         
+        function backToMenu() {
+            showScreen('landingScreen');
+        }
+    </script>
+</body>
+</html>
