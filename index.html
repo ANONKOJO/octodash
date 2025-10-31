@@ -520,73 +520,68 @@
             startGame();
         }
 
-        // Leaderboard functions
-        function saveScore(username, score) {
-            let leaderboard = JSON.parse(localStorage.getItem('octoLeaderboard') || '[]');
-            
-            // Find if user already exists
-            const existingIndex = leaderboard.findIndex(entry => entry.username.toLowerCase() === username.toLowerCase());
-            
-            if (existingIndex !== -1) {
-                // User exists - only update if new score is higher
-                if (score > leaderboard[existingIndex].score) {
-                    leaderboard[existingIndex].score = score;
-                    leaderboard[existingIndex].date = new Date().toISOString();
-                }
-            } else {
-                // New user - add to leaderboard
-                leaderboard.push({
-                    username: username,
-                    score: score,
-                    date: new Date().toISOString()
-                });
-            }
-            
-            // Sort by score (highest first)
-            leaderboard.sort((a, b) => b.score - a.score);
-            
-            // Keep only top 50 scores
-            leaderboard = leaderboard.slice(0, 50);
-            
-            localStorage.setItem('octoLeaderboard', JSON.stringify(leaderboard));
-        }
+       // Leaderboard functions
 
-        function loadLeaderboard() {
-            const leaderboard = JSON.parse(localStorage.getItem('octoLeaderboard') || '[]');
-            const leaderboardList = document.getElementById('leaderboardList');
-            
-            if (leaderboard.length === 0) {
-                leaderboardList.innerHTML = '<div class="no-scores">No scores yet! Be the first to save the baby octopuses! 🐙</div>';
-                return;
-            }
-            
-            leaderboardList.innerHTML = '';
-            
-            leaderboard.forEach((entry, index) => {
-                const item = document.createElement('div');
-                item.className = 'leaderboard-item';
-                
-                // Add special styling for top 3
-                if (index === 0) item.classList.add('top-1');
-                else if (index === 1) item.classList.add('top-2');
-                else if (index === 2) item.classList.add('top-3');
-                
-                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
-                
-                item.innerHTML = `
-                    <div class="leaderboard-rank">${medal} #${index + 1}</div>
-                    <div class="leaderboard-player">${entry.username}</div>
-                    <div class="leaderboard-score">${entry.score}</div>
-                `;
-                
-                leaderboardList.appendChild(item);
-            });
-        }
+// Save score to online leaderboard
+async function saveScore(username, score) {
+  try {
+    await fetch('/api/save-score', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, score })
+    });
+  } catch (error) {
+    console.error('Error saving score:', error);
+  }
+}
 
-        function showLeaderboard() {
-            loadLeaderboard();
-            showScreen('leaderboardScreen');
-        }
+// Load leaderboard from online server
+async function loadLeaderboard() {
+  try {
+    const response = await fetch('/api/load-leaderboard');
+    const leaderboard = await response.json();
+
+    const leaderboardList = document.getElementById('leaderboardList');
+
+    if (!leaderboard || leaderboard.length === 0) {
+      leaderboardList.innerHTML = '<div class="no-scores">No scores yet! Be the first to save the baby octopuses! 🐙</div>';
+      return;
+    }
+
+    leaderboardList.innerHTML = '';
+
+    leaderboard.forEach((entry, index) => {
+      const item = document.createElement('div');
+      item.className = 'leaderboard-item';
+
+      // Add special styling for top 3
+      if (index === 0) item.classList.add('top-1');
+      else if (index === 1) item.classList.add('top-2');
+      else if (index === 2) item.classList.add('top-3');
+
+      const medal =
+        index === 0 ? '🥇' :
+        index === 1 ? '🥈' :
+        index === 2 ? '🥉' : '';
+
+      item.innerHTML = `
+        <div class="leaderboard-rank">${medal} #${index + 1}</div>
+        <div class="leaderboard-player">${entry.username}</div>
+        <div class="leaderboard-score">${entry.score}</div>
+      `;
+
+      leaderboardList.appendChild(item);
+    });
+  } catch (error) {
+    console.error('Error loading leaderboard:', error);
+  }
+}
+
+// Show leaderboard screen
+function showLeaderboard() {
+  loadLeaderboard();
+  showScreen('leaderboardScreen');
+}
 
         // Game Logic
         const canvas = document.getElementById('gameCanvas');
