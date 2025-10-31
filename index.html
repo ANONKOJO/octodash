@@ -214,6 +214,7 @@
             font-size: 2rem;
             font-weight: bold;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
         }
 
         #gameOverScreen {
@@ -257,7 +258,7 @@
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
-        #creditsScreen, #leaderboardScreen {
+        #leaderboardScreen {
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -271,22 +272,6 @@
             font-size: 3rem;
             margin-bottom: 2rem;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .credits-content {
-            font-size: 1.3rem;
-            line-height: 2;
-            max-width: 600px;
-        }
-
-        .credits-content a {
-            color: #ff6b9d;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .credits-content a:hover {
-            color: #ff8fb3;
         }
 
         .leaderboard-container {
@@ -451,8 +436,7 @@
         <p class="final-score">Final Score: <span id="finalScore">0</span></p>
         <p style="font-size: 2rem; margin-bottom: 2rem; opacity: 0.8;">The baby octopuses still need you!</p>
         <button class="btn" onclick="restartGame()">Try Again</button>
-        <button class="btn" onclick="showLeaderboard()" style="background: linear-gradient(135deg, #ffd93d 0%, #ff6b9d 100%);">Leaderboard</button>
-       
+        <button class="btn" onclick="showLeaderboard()" style="margin-top: 1rem; background: linear-gradient(135deg, #ffd93d 0%, #ff6b9d 100%);">Leaderboard</button>
     </div>
 
     <div class="screen" id="leaderboardScreen">
@@ -464,8 +448,6 @@
         </div>
         <button class="btn" onclick="backToMenu()" style="margin-top: 2rem;">Back To Main Page</button>
     </div>
-
-    
 
     <script>
         // Create bubbles
@@ -560,80 +542,34 @@
 
         // Leaderboard functions
         function saveScore(username, score) {
-    let leaderboard = JSON.parse(localStorage.getItem('octoLeaderboard') || '[]');
-    
-    // Find if user already exists
-    const existingIndex = leaderboard.findIndex(entry => entry.username.toLowerCase() === username.toLowerCase());
-    
-    if (existingIndex !== -1) {
-        // User exists - only update if new score is higher
-        if (score > leaderboard[existingIndex].score) {
-            leaderboard[existingIndex].score = score;
-            leaderboard[existingIndex].date = new Date().toISOString();
+            let leaderboard = JSON.parse(localStorage.getItem('octoLeaderboard') || '[]');
+            
+            // Find if user already exists
+            const existingIndex = leaderboard.findIndex(entry => entry.username.toLowerCase() === username.toLowerCase());
+            
+            if (existingIndex !== -1) {
+                // User exists - only update if new score is higher
+                if (score > leaderboard[existingIndex].score) {
+                    leaderboard[existingIndex].score = score;
+                    leaderboard[existingIndex].date = new Date().toISOString();
+                }
+            } else {
+                // New user - add to leaderboard
+                leaderboard.push({
+                    username: username,
+                    score: score,
+                    date: new Date().toISOString()
+                });
+            }
+            
+            // Sort by score (highest first)
+            leaderboard.sort((a, b) => b.score - a.score);
+            
+            // Keep only top 50 scores
+            leaderboard = leaderboard.slice(0, 50);
+            
+            localStorage.setItem('octoLeaderboard', JSON.stringify(leaderboard));
         }
-    } else {
-        // New user - add to leaderboard
-        leaderboard.push({
-            username: username,
-            score: score,
-            date: new Date().toISOString()
-        });
-    }
-    
-    // Sort by score (highest first)
-    leaderboard.sort((a, b) => b.score - a.score);
-    
-    // Keep only top 50 scores
-    leaderboard = leaderboard.slice(0, 50);
-    
-    localStorage.setItem('octoLeaderboard', JSON.stringify(leaderboard));
-}
-function updateShareButton(username, score) {
-    const leaderboard = JSON.parse(localStorage.getItem('octoLeaderboard') || '[]');
-    const userRank = leaderboard.findIndex(entry => entry.username.toLowerCase() === username.toLowerCase()) + 1;
-    const totalPlayers = leaderboard.length;
-    
-    const percentile = totalPlayers > 1 ? Math.round((1 - (userRank - 1) / totalPlayers) * 100) : 100;
-    
-    // Create or update share button
-    let shareBtn = document.getElementById('twitterShareBtn');
-    if (!shareBtn) {
-        shareBtn = document.createElement('button');
-        shareBtn.id = 'twitterShareBtn';
-        shareBtn.className = 'btn';
-        shareBtn.style.marginTop = '1rem';
-        shareBtn.style.background = 'linear-gradient(135deg, #1DA1F2 0%, #0d8bd9 100%)';
-        shareBtn.onclick = shareOnTwitter;
-        
-        // Insert after final score
-        const gameOverScreen = document.getElementById('gameOverScreen');
-        const finalScoreP = gameOverScreen.querySelector('.final-score').parentElement;
-        finalScoreP.insertAdjacentElement('afterend', shareBtn);
-    }
-    
-    const rankText = userRank === 1 ? '🥇 #1' : userRank === 2 ? '🥈 #2' : userRank === 3 ? '🥉 #3' : `#${userRank}`;
-    shareBtn.innerHTML = `🐦 Share on Twitter`;
-    
-    // Store data for sharing
-    shareBtn.dataset.rank = rankText;
-    shareBtn.dataset.percentile = percentile;
-    shareBtn.dataset.score = score;
-}
-
-function shareOnTwitter() {
-    const btn = document.getElementById('twitterShareBtn');
-    const rank = btn.dataset.rank;
-    const percentile = btn.dataset.percentile;
-    const score = btn.dataset.score;
-    
-    const text = `I just ranked ${rank} (Top ${percentile}%) in Octo Dash: The Rescue Mission! 🐙\n\nI saved ${score} baby octopuses from the ocean depths!\n\nCan you beat my score?`;
-    
-    const url = window.location.origin;
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
-    
-    window.open(twitterUrl, '_blank', 'width=550,height=420');
-}
- 
 
         function loadLeaderboard() {
             const leaderboard = JSON.parse(localStorage.getItem('octoLeaderboard') || '[]');
@@ -802,26 +738,21 @@ function shareOnTwitter() {
         }
 
         function gameOver() {
-    gameRunning = false;
-    cancelAnimationFrame(gameLoopId);
-    
-    // Save score to leaderboard
-    const username = twitterInput.value.trim().replace(/@/g, '') || 'Anonymous';
-    saveScore(username, score);
-    
-    document.getElementById('finalScore').textContent = score;
-    
-    // Calculate ranking and show share button
-    updateShareButton(username, score);
-    
-    showScreen('gameOverScreen');
-}
+            gameRunning = false;
+            cancelAnimationFrame(gameLoopId);
+            
+            // Save score to leaderboard
+            const username = twitterInput.value.trim().replace(/@/g, '') || 'Anonymous';
+            saveScore(username, score);
+            
+            document.getElementById('finalScore').textContent = score;
+            showScreen('gameOverScreen');
+        }
 
         function restartGame() {
             startGame();
         }
 
-         
         function backToMenu() {
             showScreen('landingScreen');
         }
