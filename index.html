@@ -360,29 +360,7 @@
             padding: 2rem;
         }
 
-        .bubbles {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .bubble {
-            position: absolute;
-            bottom: -50px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            animation: rise 8s infinite ease-in;
-        }
-
-        @keyframes rise {
-            to {
-                bottom: 110%;
-                transform: translateX(100px);
-                opacity: 0;
-            }
-        }
+        
 
         @media (max-width: 768px) {
             .title { font-size: 2rem; }
@@ -398,7 +376,7 @@
     </style>
 </head>
 <body>
-    <div class="bubbles" id="bubbles"></div>
+    
 
     <div class="screen active" id="landingScreen">
         <div class="landing-content">
@@ -450,23 +428,7 @@
     </div>
 
     <script>
-        // Create bubbles
-        function createBubbles() {
-            const bubbleContainer = document.getElementById('bubbles');
-            if (!bubbleContainer) return;
-            for (let i = 0; i < 20; i++) {
-                const bubble = document.createElement('div');
-                bubble.className = 'bubble';
-                const size = Math.random() * 60 + 20;
-                bubble.style.width = size + 'px';
-                bubble.style.height = size + 'px';
-                bubble.style.left = Math.random() * 100 + '%';
-                bubble.style.animationDelay = Math.random() * 8 + 's';
-                bubble.style.animationDuration = (Math.random() * 5 + 5) + 's';
-                bubbleContainer.appendChild(bubble);
-            }
-        }
-        createBubbles();
+        
 
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
